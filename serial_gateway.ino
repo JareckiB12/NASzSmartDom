@@ -1,3 +1,5 @@
+//Serial_gateway z podpisem, MySensors lib v1.5
+
 /**
  * The MySensors Arduino library handles the wireless radio link and protocol
  * between your home built sensors/actuators and HA controller of choice.
