@@ -1,4 +1,4 @@
-//Szablon
+//Szablon v1.0
 
 #include <MySigningAtsha204Soft.h>
 #include <SPI.h>
