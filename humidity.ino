@@ -1,4 +1,4 @@
-//Czujnik DHT22 z podpisywaniem
+//Czujnik DHT22 z podpisywaniem MySensors lib v1.5
 
 #include <MySigningAtsha204Soft.h>
 #include <SPI.h>
