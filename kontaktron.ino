@@ -2,42 +2,90 @@
 
 #include <MySigningAtsha204Soft.h>
 #include <SPI.h>
-#include <MySensor.h>  
+#include <MySensor.h>
+//#include <sleep.h>
 
-#define NUMER_NODA 1  //ZMIENIC NA ODPOWIEDNI!!!!!!!!!!!!!!!!!
-#define SKETCH_NAME ""
+#define NUMER_NODA 4  //ZMIENIC NA ODPOWIEDNI!!!!!!!!!!!!!!!!!
+#define SKETCH_NAME "Kontaktron"
 #define SKETCH_MAJOR_VER "1"
 #define SKETCH_MINOR_VER "0"
 
-unsigned long SLEEP_TIME = 30000;
+#define CHILD_ID 3
+#define BUTTON_PIN 3
+#define INTERRUPT_SENSOR 1  //przerwanie 1 jest digital pin 3 Arduino
 
 MyTransportNRF24 radio;  // NRFRF24L01 radio driver
 MyHwATMega328 hw; // Select AtMega328 hardware profile
 MySigningAtsha204Soft signer; // Select ATSHA204A physical signing circuit
 MySensor gw(radio, hw, signer);
 
+unsigned long SLEEP_TIME = 30000;
+byte val;
+int oldBatLevel;
+
+MyMessage msg(CHILD_ID, V_TRIPPED)
 
 void setup()  
 { 
   gw.begin(NULL,NUMER_NODA);
+  gw.sendSketchInfo(SKETCH_NAME, SKETCH_MAJOR_VER"."SKETCH_MINOR_VER);
 
+  pinMode(BUTTON_PIN,INPUT);
+  digitalWrite (BUTTON_PIN, LOW);   
+
+  pinMode(2,INPUT);
+  digitalWrite (2, LOW); 
+
+  pinMode(4,INPUT);
+  digitalWrite (4, LOW); 
+
+  pinMode(5,INPUT);
+  digitalWrite (5, LOW); 
+
+  pinMode(6,INPUT);
+  digitalWrite (6, LOW); 
+
+  pinMode(7,INPUT);
+  digitalWrite (7, LOW); 
+
+  pinMode(8,INPUT);
+  digitalWrite (8, LOW); 
+
+  gw.present(CHILD_ID, S_DOOR);
+
+  val = digitalRead(BUTTON_PIN);
+  oldBatLevel = -1;  
+  
+  sendValue();
   
 }
 
 void loop()      
-{  
+{
+  gw.sleep(INTERRUPT_SENSOR, CHANGE, SLEEP_TIME); 
+  val = digitalRead(BUTTON_PIN);
 
-  
-  int batLevel = getBatteryLevel();
-    Serial.print("Bateria: ");
-    Serial.println(batLevel);
-    gw.sendBatteryLevel(batLevel);    
+  sendValue(); 
 
-
-   
-  gw.sleep(SLEEP_TIME); //sleep a bit
+  gw.sleep(200); 
 }
 
+
+void sendValue()
+{
+  //gw.powerUp();  
+  gw.send(msg.set(val==HIGH ? 1 : 0));
+
+  gw.powerDown();  
+
+  int batLevel = getBatteryLevel();
+  if (oldBatLevel != batLevel)
+  {
+    //gw.powerUp();  
+    gw.sendBatteryLevel(batLevel);    
+    oldBatLevel = batLevel;
+  }
+}
 
 // Battery measure
 int getBatteryLevel () 
