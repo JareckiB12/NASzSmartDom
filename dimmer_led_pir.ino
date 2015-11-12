@@ -18,13 +18,16 @@
  * Version 1.0 - February 15, 2014 - Bruce Lacey
  * Version 1.1 - February 4, 2014 - Pete B - added buttons to control on/off and dim level and a motion sensor
  ***/
-#define SN "Mirror LED"
-#define SV "1.1"
-#define NODE_ID AUTO  //change to a number to assign a specific ID
 
+#include <MySigningAtsha204Soft.h>
 #include <SPI.h>
 #include <MySensor.h>
 #include <Bounce2.h>
+
+#define NUMER_NODA   //ZMIENIC NA ODPOWIEDNI!!!!!!!!!!!!!!!!!
+#define SKETCH_NAME "Dimmer LED z PIR"
+#define SKETCH_MAJOR_VER "1"
+#define SKETCH_MINOR_VER "0"
 
 #define MIRROR_LED_CHILD 0    //ID of the LED child
 #define MOTION_CHILD 1  //ID of the motion sensor child
@@ -38,8 +41,10 @@
 #define FADE_DELAY 10  // Delay in ms for each percentage fade up/down (10ms = 1s full-range dim)
 #define FADE_PERCENTAGE 10 //The percentage the fade level will be changed when a button is pressed
 
-
-MySensor gw; //Don't need to define pins unless they are changing from the default
+MyTransportNRF24 radio;  // NRFRF24L01 radio driver
+MyHwATMega328 hw; // Select AtMega328 hardware profile
+MySigningAtsha204Soft signer; // Select ATSHA204A physical signing circuit
+MySensor gw(radio, hw, signer); 
 
 static int currentLevel = 0;  // Current dim level...
 uint8_t fadeLevel = 0; //used to store the fade level when using the buttons
@@ -73,16 +78,16 @@ MyMessage dimmerMsg(MIRROR_LED_CHILD, V_DIMMER);
  */
 void setup()  
 { 
-  Serial.println( SN ); 
+  //Serial.println( SN ); 
 
-  gw.begin( incomingMessage,  NODE_ID);
+  gw.begin(incomingMessage,  NUMER_NODA);
 
   // Register the LED Dimmable Light with the gateway
   gw.present( MIRROR_LED_CHILD, S_DIMMER );
   gw.present(MOTION_CHILD, S_MOTION);
   
   // Send the sketch version information to the gateway and Controller
-  gw.sendSketchInfo(SN, SV);
+  gw.sendSketchInfo(SKETCH_NAME, SKETCH_MAJOR_VER"."SKETCH_MINOR_VER);
   
   metric = gw.getConfig().isMetric;
   
