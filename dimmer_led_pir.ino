@@ -24,7 +24,7 @@
 #include <MySensor.h>
 #include <Bounce2.h>
 
-#define NUMER_NODA   //ZMIENIC NA ODPOWIEDNI!!!!!!!!!!!!!!!!!
+#define NUMER_NODA 8   //ZMIENIC NA ODPOWIEDNI!!!!!!!!!!!!!!!!!
 #define SKETCH_NAME "Dimmer LED z PIR"
 #define SKETCH_MAJOR_VER "1"
 #define SKETCH_MINOR_VER "0"
