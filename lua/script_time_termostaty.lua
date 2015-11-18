@@ -135,11 +135,11 @@ commandArray = {}
 		--if oknoZamkniete('Okno Salon') then print('TRUE')
 		--else print('FALSE')
 		--end
-		-- Salon nie ma tRano, ponieważ Ewa w domu
+		-- Salon i Kuchnia nie ma tRano, ponieważ Ewa w domu
 		zmien, json = termostatSetPoint('Salon', 13, czasSalon[1], tDzien, czasSalon[2], tDzien, czasSalon[3], tNoc, 'Okno Salon', 6, wyl)
 		if zmien then commandArray[1]={['OpenURL']=json} end
 		
-		zmien, json = termostatSetPoint('Kuchnia', 14, czasKuchnia[1], tRano, czasKuchnia[2], tDzien, czasKuchnia[3], tNoc, 'Okno Kuchnia', 0, wyl)
+		zmien, json = termostatSetPoint('Kuchnia', 14, czasKuchnia[1], tDzien, czasKuchnia[2], tDzien, czasKuchnia[3], tNoc, 'Okno Kuchnia', 0, wyl)
 		if zmien then commandArray[2]={['OpenURL']=json} end
 		
 		zmien, json = termostatSetPoint('Bąble', 8, czasBable[1], tRano, czasBable[2], tDzien, czasBable[3], tNocBable, 'Okno Bąble', 0, wyl)
