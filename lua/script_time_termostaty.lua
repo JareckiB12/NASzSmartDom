@@ -1,8 +1,9 @@
--- wymagane zmienne użytkownika: tempNoc, tempDzien, tempNocBable, tempNieMaNas
-adres = '127.0.0.1:8080' --adres Domoticza
-opoznienieOkna = 10 -- po jakim czasie w sekundach od zamknięcia okna ma powrócić ustawienie temperatury
+-- wymagane zmienne użytkownika: tempNoc, tempRano, tempDzien, tempNocBable, tempNieMaNas
+adres = '127.0.0.1:5000' --adres Domoticza
+opoznienieOkna = 900 -- po jakim czasie w sekundach od zamknięcia okna ma powrócić ustawienie temperatury
 
 tNoc = uservariables["tempNoc"]
+tRano = uservariables["tempRano"]
 tDzien = uservariables["tempDzien"]
 tNocBable = uservariables["tempNocBable"]
 tNiemanas = uservariables["tempNieMaNas"]
@@ -10,6 +11,7 @@ tNiemanas = uservariables["tempNieMaNas"]
 -- Warunek ustawiający temperaturę gdy nikogo nie ma w domu.
 if (otherdevices["Nie ma nas"] == 'On') then
 	tNoc = tNiemanas
+	tRano = tNiemanas
 	tDzien = tNiemanas
 	tNocBable = tNiemanas
 end
@@ -22,41 +24,18 @@ end
 
 if czyWeekend() then
 	-- weekendowe czasy:
-	czasSalon = {"07:00", "16:30", "21:00"}
-	czasKuchnia = {"08:00", "16:30", "21:00"}
-	czasBable = {"06:00", "16:30", "19:30"}
-	czasHubert = {"06:00", "16:30", "21:00"}
-else
-	-- pracujące czasy:
 	czasSalon = {"08:00", "16:30", "21:00"}
 	czasKuchnia = {"08:00", "16:30", "21:00"}
 	czasBable = {"08:00", "16:30", "19:30"}
 	czasHubert = {"09:00", "16:30", "21:00"}
+	tRano = tDzien
+else
+	-- pracujące czasy:
+	czasSalon = {"07:00", "16:30", "21:00"}
+	czasKuchnia = {"08:00", "16:30", "21:00"}
+	czasBable = {"06:00", "16:30", "19:30"}
+	czasHubert = {"06:00", "16:30", "21:00"}
 end
-
-
-
-
-
-
-
---[[
-czasRanoSalon = "07:00"
-czasPoludnieSalon = "16:30"
-czasWieczorSalon = "
-
-czasRanoKuchnia
-czasPoludnieKuchnia
-czasWieczorKuchnia
-
-czasRanoBable
-czasPoludnieBable
-czasWieczorBable
-
-czasRanoHubert
-czasPoludnieHubert
-czasWieczorHubert
---]]
 
 function roznicaCzasu(czas)
    r = string.sub(czas, 1, 4)
@@ -72,32 +51,27 @@ function roznicaCzasu(czas)
 end
 
 function czasokres(czas1, czas2) --czas w formacie hh:mm:ss, czas1 < czas2
-	t0 = os.time()
-	
-	rok = os.date("%Y")
+   t0 = os.time()
+   rok = os.date("%Y")
    miesiac = os.date("%m")
    dzien = os.date("%d")
-   
-	g1 = string.sub(czas1, 1, 2)
+   g1 = string.sub(czas1, 1, 2)
    m1 = string.sub(czas1, 4, 5)
    s1 = string.sub(czas1, 7, 8)
-	g2 = string.sub(czas2, 1, 2)
+   g2 = string.sub(czas2, 1, 2)
    m2 = string.sub(czas2, 4, 5)
    s2 = string.sub(czas2, 7, 8)
-	
-	t1 = os.time{year=rok, month=miesiac, day=dzien, hour=g1, min=m1, sec=s1}
-	t2 = os.time{year=rok, month=miesiac, day=dzien, hour=g2, min=m2, sec=s2}
-	
-	if (os.difftime(t0, t1) >= 0) and (os.difftime(t0, t2) < 0) then
-		return 1
-	else
-		return 0
-	end
+   t1 = os.time{year=rok, month=miesiac, day=dzien, hour=g1, min=m1, sec=s1}
+   t2 = os.time{year=rok, month=miesiac, day=dzien, hour=g2, min=m2, sec=s2}
+   if (os.difftime(t0, t1) >= 0) and (os.difftime(t0, t2) < 0) then
+      return 1
+   else
+      return 0
+   end
 end
 
 -- funkcja wprowadza opóźnienie w zamknięciu okna
 function oknoZamkniete(okno, opoznienie)
-	--print(roznicaCzasu(otherdevices_lastupdate[okno]))
 	if (otherdevices[okno] == 'On') then return false 
 	elseif ((otherdevices[okno] == 'Off') and (roznicaCzasu(otherdevices_lastupdate[okno]) > opoznienie)) then return true
 	else return false
@@ -155,35 +129,26 @@ end
 
 
 commandArray = {}
-
---[[ - przeniesione na górę
--- Warunek ustawiający temperaturę gdy nikogo nie ma w domu.
-	if (otherdevices["Nie ma nas"] == 'On') then
-		tNoc = tNiemanas
-		tDzien = tNiemanas
-		tNocBable = tNiemanas
-	end
---]]
-	
-	if (devicechanged['Testowy']) then
-		print('---------- Wciśnięto Testowy ------------')
+--	if (devicechanged['Testowy']) then
+--		print('---------- Wciśnięto Testowy ------------')
 		--print(otherdevices_svalues['Salon'])
 		--if oknoZamkniete('Okno Salon') then print('TRUE')
 		--else print('FALSE')
 		--end
-		zmien, json = termostatSetPoint('Salon', 13, czasSalon[1], tNoc, czasSalon[2], tDzien, czasSalon[3], tNoc, 'Okno Salon', 6, wyl)
+		-- Salon nie ma tRano, ponieważ Ewa w domu
+		zmien, json = termostatSetPoint('Salon', 13, czasSalon[1], tDzien, czasSalon[2], tDzien, czasSalon[3], tNoc, 'Okno Salon', 6, wyl)
 		if zmien then commandArray[1]={['OpenURL']=json} end
 		
-		zmien, json = termostatSetPoint('Kuchnia', 14, czasKuchnia[1], tNoc, czasKuchnia[2], tDzien, czasKuchnia[3], tNoc, 'Okno Kuchnia', 0, wyl)
+		zmien, json = termostatSetPoint('Kuchnia', 14, czasKuchnia[1], tRano, czasKuchnia[2], tDzien, czasKuchnia[3], tNoc, 'Okno Kuchnia', 0, wyl)
 		if zmien then commandArray[2]={['OpenURL']=json} end
 		
-		zmien, json = termostatSetPoint('Bąble', 8, czasBable[1], tNoc, czasBable[2], tDzien, czasBable[3], tNocBable, 'Okno Bąble', 0, wyl)
+		zmien, json = termostatSetPoint('Bąble', 8, czasBable[1], tRano, czasBable[2], tDzien, czasBable[3], tNocBable, 'Okno Bąble', 0, wyl)
 		if zmien then commandArray[3]={['OpenURL']=json} end
 		
-		zmien, json = termostatSetPoint('Hubert', 15, czasHubert[1], tNoc, czasHubert[2], tDzien, czasHubert[3], tNoc, 'Okno Hubert', 0, wyl)
+		zmien, json = termostatSetPoint('Hubert', 15, czasHubert[1], tRano, czasHubert[2], tDzien, czasHubert[3], tNoc, 'Okno Hubert', 0, wyl)
 		if zmien then commandArray[4]={['OpenURL']=json} end
-		print('-----------------------------------------')
-	end
+--		print('-----------------------------------------')
+--	end
 
 --[[	
 	if (devicechanged['Wyłącz ogrzewanie'] == 'Off') then
